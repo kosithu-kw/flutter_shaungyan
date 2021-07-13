@@ -5,7 +5,7 @@ import 'home.dart';
 void main(){
   runApp(
     MaterialApp(
-      title: 'MON RTL ROUTES',
+      title: 'Shoung ROUTES',
       // Start the app with the "/" named route. In this case, the app starts
       // on the FirstScreen widget.
       initialRoute: '/',

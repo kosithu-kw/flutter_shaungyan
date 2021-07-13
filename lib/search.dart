@@ -1,15 +1,40 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flappy_search_bar/flappy_search_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'error.dart';
 
-class SearchApp extends StatelessWidget {
+
+
+class SearchApp extends StatefulWidget {
+  const SearchApp({Key? key}) : super(key: key);
+
+  @override
+  _SearchAppState createState() => _SearchAppState();
+}
+
+class _SearchAppState extends State<SearchApp> {
+  @override
+
+  checkConnection() async{
+    try {
+      final result = await InternetAddress.lookup('raw.githubusercontent.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+       // Navigator.pushNamed(context, '/search');
+      }
+    } on SocketException catch (_) {
+      Navigator.pushNamed(context, '/error');
+    }
+  }
 
 
   Future<List<Food>> _getALlFoods(String text) async {
     var res=await http.get(Uri.https('raw.githubusercontent.com', "kosithu-kw/flutter_shoung_data/master/data_list.json"));
     var jsonData=jsonDecode(res.body);
+
     List<Food> foods = [];
 
     for (var food in jsonData) {
@@ -21,68 +46,91 @@ class SearchApp extends StatelessWidget {
     return foods;
   }
 
-  const SearchApp({Key? key}) : super(key: key);
-  final String _title="အစားအစာများရှာဖွေရန်";
+  @override
+  void initState() {
+    // TODO: implement initState
+    Timer(Duration(seconds: 3), () => checkConnection());
+  }
+
+  final String _title="အစားအစာနာမည်ဖြင့်ရှာဖွေရန်";
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
+    return MaterialApp(
+        routes: {
+          '/error' : (context) => ErrorApp(),
+        },
+        home: Scaffold(
+            appBar: AppBar(
+              leading: IconButton(
+                onPressed: (){
+                  Navigator.pop(context);
 
-          title: Text(_title,
-            style: TextStyle(
-                color: Colors.white
+                },
+                icon: Icon(Icons.arrow_back_outlined),
+              ),
+              title: Text(_title,
+                style: TextStyle(
+                    color: Colors.white
 
-            ),
-          ),
+                ),
+              ),
 
-          backgroundColor: Colors.blueGrey,
-
-        ),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            child: SearchBar(
-                onSearch:(t)=> _getALlFoods(t),
-              loader: Text("Loading..."),
-              hintText: "ရှာဖွေရန်",
-              onItemFound: (Food food, int i){
-                  return Container(
-                      child: Card(
-                        child: ListTile(
-
-                            title: Text(
-                              food.h,
-                              textAlign: TextAlign.center,
-                            ),
-                            subtitle: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                Expanded(
-                                  child: new Padding(
-                                      padding: const EdgeInsets.all(5.0),
-                                      child: Center(
-                                        child: Text(food.f),
-                                      )
-                                  ),
-                                ),
-                                Expanded(
-                                  child: new Padding(
-                                      padding: const EdgeInsets.all(5.0),
-                                      child: Center(
-                                        child: Text(food.s),
-                                      )
-                                  ),
-                                ),
-                              ],
-                            )
-                        ),
-                      )
-                  );
-              },
+              backgroundColor: Colors.blueGrey,
 
             ),
-          ),
+            body: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+                child: SearchBar(
+                  onSearch:(t)=> _getALlFoods(t),
+                  loader: Center(
+                    child: Text("ရှာဖွေနေသည်..."),
+                  ),
+                  minimumChars: 1,
+                  emptyWidget: Center(
+                    child: Text("သင်ရှာသောအစားအစာနာမည်မတွေ့ရှိပါ"),
+                  ),
+                  hintText: "ရှာဖွေရန်",
+                  onItemFound: (Food food, int i){
+                    return Container(
+                        child: Card(
+                          child: ListTile(
+
+                              title: Text(
+                                food.h,
+                                textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.redAccent)
+                              ),
+                              subtitle: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Expanded(
+                                    child: new Padding(
+                                        padding: const EdgeInsets.all(5.0),
+                                        child: Center(
+                                          child: Text(food.f, style: TextStyle(color: Colors.black)),
+                                        )
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: new Padding(
+                                        padding: const EdgeInsets.all(5.0),
+                                        child: Center(
+                                          child: Text(food.s, style: TextStyle(color: Colors.black)),
+                                        )
+                                    ),
+                                  ),
+                                ],
+                              )
+                          ),
+                        )
+                    );
+                  },
+
+                ),
+              ),
+            )
         )
     );
   }

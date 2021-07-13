@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -7,7 +8,7 @@ import 'error.dart';
 void main(){
   runApp(
     MaterialApp(
-      title: 'Shoung',
+      title: 'Shoung Routes',
       // Start the app with the "/" named route. In this case, the app starts
       // on the FirstScreen widget.
 
@@ -46,13 +47,16 @@ class _AppState extends State<MainApp> {
     } on SocketException catch (_) {
       Navigator.pushNamed(context, '/error');
     }
+
+
   }
 
 
   @override
   void initState() {
     // TODO: implement initState
-    checkConnection();
+    Timer(Duration(seconds: 3), () => checkConnection());
+    //checkConnection();
     super.initState();
   }
 

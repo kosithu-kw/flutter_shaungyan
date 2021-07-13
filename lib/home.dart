@@ -102,6 +102,7 @@ class _AppState extends State<HomeApp> {
                         title: Text(
                             s.data[i]['h'],
                           textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.redAccent)
                         ),
                         subtitle: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -110,7 +111,7 @@ class _AppState extends State<HomeApp> {
                               child: new Padding(
                                 padding: const EdgeInsets.all(5.0),
                                 child: Center(
-                                  child: Text(s.data[i]['f']),
+                                  child: Text(s.data[i]['f'], style: TextStyle(color: Colors.black),),
                                 )
                               ),
                             ),
@@ -118,7 +119,7 @@ class _AppState extends State<HomeApp> {
                               child: new Padding(
                                 padding: const EdgeInsets.all(5.0),
                                 child: Center(
-                                  child: Text(s.data[i]['s']),
+                                  child: Text(s.data[i]['s'],style: TextStyle(color: Colors.black)),
                                 )
                               ),
                             ),
