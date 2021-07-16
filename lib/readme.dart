@@ -37,6 +37,11 @@ class _ReadmeAppState extends State<ReadmeApp> {
             child: Text(_subTitle, style: TextStyle( color: Colors.white70),),
             preferredSize: Size.fromHeight(20),
           ),
+          iconTheme: IconThemeData(
+              color: Colors.white70
+          ),
+          backgroundColor: Colors.blueGrey,
+
 
         ),
 
