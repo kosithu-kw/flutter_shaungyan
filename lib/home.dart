@@ -7,6 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:shaungyan/search.dart';
 import 'main.dart';
 import 'error.dart';
+import 'package:share/share.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 
 void main()=>runApp(HomeApp());
@@ -23,10 +25,12 @@ class HomeApp extends StatefulWidget {
 class _AppState extends State<HomeApp> {
 
   getData() async{
-    var res=await http.get(Uri.https('raw.githubusercontent.com', "kosithu-kw/flutter_shoung_data/master/data_list.json"));
-    var jsonData=jsonDecode(res.body);
+    var result=await DefaultCacheManager().getSingleFile("https://raw.githubusercontent.com/kosithu-kw/flutter_shoung_data/master/data_list.json");
+    var file=await result.readAsString();
+    var jsonData=jsonDecode(file);
     return jsonData;
   }
+
 
   final String _title="ရှောင်";
 
@@ -81,6 +85,20 @@ class _AppState extends State<HomeApp> {
                 leading: Icon(Icons.settings_accessibility),
                 onTap: (){
                   Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context)=> new HomeApp()));
+                },
+              ),
+              ListTile(
+                title: Text("Share App"),
+                leading: Icon(Icons.share),
+                onTap: (){
+                  Share.share("https://play.google.com/store/apps/details?id=com.goldenmawlamyine.shaungyan");
+                },
+              ),
+              ListTile(
+                title: Text("Read Me"),
+                leading: Icon(Icons.read_more),
+                onTap: (){
+                  Navigator.of(context).pushNamed('/readme');
                 },
               )
             ],
