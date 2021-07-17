@@ -31,6 +31,21 @@ class _AppState extends State<HomeApp> {
     return jsonData;
   }
 
+  bool _isUpdate=false;
+
+  _updateData() async{
+    await DefaultCacheManager().emptyCache().then((value){
+      setState(() {
+        _isUpdate=true;
+
+      });
+      Timer(Duration(seconds: 3), () {
+        setState(() {
+          _isUpdate=false;
+        });
+      });
+    });
+  }
 
   final String _title="ရှောင်";
 
@@ -52,6 +67,11 @@ class _AppState extends State<HomeApp> {
             ),
           ),
           actions: [
+            IconButton(onPressed: (){
+              _updateData();
+            },
+              icon: Icon(Icons.cloud_download),
+            ),
               IconButton(
                   color: Colors.white70,
                   iconSize: 30,
@@ -107,8 +127,27 @@ class _AppState extends State<HomeApp> {
         body: Container(
 
           child: FutureBuilder(
-            future: getData(),
+            future: _isUpdate ? getData() : getData(),
             builder: (context, AsyncSnapshot s){
+
+              if(_isUpdate)
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+
+                    children: [
+                      Container(
+                        padding: EdgeInsets.only(left: 120, right: 120),
+                        child: LinearProgressIndicator(),
+                      ),
+                      Container(
+                        padding: EdgeInsets.only(top: 20),
+                        child: Text("Updating data from server..."),
+                      )
+                    ],
+                  ),
+                );
+
               if(s.hasData){
 
                 return ListView.builder(

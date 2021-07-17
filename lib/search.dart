@@ -91,7 +91,7 @@ class _SearchAppState extends State<SearchApp> {
   void initState() {
     // TODO: implement initState
     if (!_isInterstitialAdReady) {
-      _loadInterstitialAd();
+     // _loadInterstitialAd();
     }
     //Timer(Duration(seconds: 3), () => checkConnection());
   }
@@ -117,7 +117,7 @@ class _SearchAppState extends State<SearchApp> {
               leading: IconButton(
                 onPressed: (){
                   if (_isInterstitialAdReady) {
-                    _interstitialAd?.show();
+                    //_interstitialAd?.show();
                   } else {
                     Navigator.pop(context);
                   }
