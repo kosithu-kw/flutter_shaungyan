@@ -5,11 +5,11 @@ import 'dart:io';
 import 'package:flappy_search_bar/flappy_search_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'error.dart';
+import 'package:shaungyan/home.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'ad_helper.dart';
 
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:page_transition/page_transition.dart';
 
 
 class SearchApp extends StatefulWidget {
@@ -33,6 +33,27 @@ class _SearchAppState extends State<SearchApp> {
     }
   }
 
+  String InterstitialId="";
+  bool showInter=false;
+
+  _getAdId() async{
+    var result=await http.get(Uri.https("raw.githubusercontent.com", "kosithu-kw/flutter_shoung_data/master/ads.json"));
+    var jsonData=await jsonDecode(result.body);
+    //print(jsonData['int']);
+
+    setState(() {
+      InterstitialId=jsonData['int'];
+      if(jsonData['showInter']=="true"){
+          setState(() {
+            showInter=true;
+          });
+      }else{
+        setState(() {
+          showInter=false;
+        });
+      }
+    });
+  }
 
 
   // TODO: Add _interstitialAd
@@ -44,7 +65,7 @@ class _SearchAppState extends State<SearchApp> {
   // TODO: Implement _loadInterstitialAd()
   void _loadInterstitialAd() {
     InterstitialAd.load(
-      adUnitId: AdHelper.interstitialAdUnitId,
+      adUnitId: InterstitialId,
       request: AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
@@ -52,7 +73,8 @@ class _SearchAppState extends State<SearchApp> {
 
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdDismissedFullScreenContent: (ad) {
-              Navigator.pop(context);
+              Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: HomeApp()));
+
             },
           );
 
@@ -66,66 +88,59 @@ class _SearchAppState extends State<SearchApp> {
     );
   }
 
-
-
-
   Future<List<Food>> _getALlFoods(String text) async {
 
       var result=await DefaultCacheManager().getSingleFile("https://raw.githubusercontent.com/kosithu-kw/flutter_shoung_data/master/data_list.json");
       var file=await result.readAsString();
       var jsonData=jsonDecode(file);
-
-
-    List<Food> foods = [];
-
-    for (var food in jsonData) {
-      if(food['f'].toLowerCase().contains(text.toLowerCase()) || food['s'].toLowerCase().contains(text.toLowerCase())){
+      List<Food> foods = [];
+      for (var food in jsonData) {
+        if(food['f'].toLowerCase().contains(text.toLowerCase()) || food['s'].toLowerCase().contains(text.toLowerCase())){
         foods.add(Food(food['f'], food['s'], food['h']));
+        }
       }
-
-    }
-    return foods;
+      return foods;
   }
+
 
   @override
   void initState() {
     // TODO: implement initState
-    if (!_isInterstitialAdReady) {
-     // _loadInterstitialAd();
-    }
-    //Timer(Duration(seconds: 3), () => checkConnection());
+    _getAdId();
+
+    Timer(Duration(seconds: 3), () {
+      if(showInter){
+        if (!_isInterstitialAdReady) {
+          _loadInterstitialAd();
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
-    _interstitialAd?.dispose();
+    if(showInter){
+      _interstitialAd?.dispose();
+    }
 
     super.dispose();
   }
 
-  final String _title="အစားအစာနာမည်ဖြင့်ရှာဖွေရန်";
+  final String _title="အစားအစာနာမည်ဖြင့်ရှာရန်";
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        routes: {
-          '/error' : (context) => ErrorApp(),
+    return WillPopScope(
+        onWillPop: () async {
+          return await  Navigator.push(context, PageTransition(type: PageTransitionType.leftToRight, child: HomeApp()));
+
         },
-        home: Scaffold(
+
+        child : MaterialApp(
+            home : Scaffold(
             appBar: AppBar(
-              leading: IconButton(
-                onPressed: (){
-                  if (_isInterstitialAdReady) {
-                    //_interstitialAd?.show();
-                  } else {
-                    Navigator.pop(context);
-                  }
-
-
-                },
-                icon: Icon(Icons.arrow_back_outlined),
-              ),
+              centerTitle: true,
               title: Text(_title,
                 style: TextStyle(
                     color: Colors.white
@@ -136,20 +151,35 @@ class _SearchAppState extends State<SearchApp> {
               backgroundColor: Colors.blueGrey,
 
             ),
+
+            floatingActionButton: FloatingActionButton(
+              onPressed: (){
+                  if(showInter && _isInterstitialAdReady){
+                      _interstitialAd?.show();
+                  }else{
+                    Navigator.push(context, PageTransition(type: PageTransitionType.leftToRightWithFade, child: HomeApp()));
+                  }
+              },
+              backgroundColor: Colors.blueGrey,
+              child: Icon(Icons.home),
+            ),
+
             body: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
                 child: SearchBar(
                   onSearch:(t)=> _getALlFoods(t),
                   loader: Center(
-                    child: Text("ရှာဖွေနေသည်..."),
+                    child: Text("ရှာနေသည်..."),
+
                   ),
                   minimumChars: 1,
                   emptyWidget: Center(
                     child: Text("သင်ရှာသောအစားအစာနာမည်မတွေ့ရှိပါ"),
                   ),
-                  hintText: "ရှာဖွေရန်",
+                  hintText: "ရှာမည်",
                   onItemFound: (Food food, int i){
+
                     return Container(
                         child: Card(
                           child: ListTile(
@@ -189,6 +219,7 @@ class _SearchAppState extends State<SearchApp> {
               ),
             )
         )
+        ),
     );
   }
 }

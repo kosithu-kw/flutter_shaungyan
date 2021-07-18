@@ -1,6 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:http/http.dart' as http;
+
+
 class AdHelper {
+
 
   static String get bannerAdUnitId {
     if (Platform.isAndroid) {

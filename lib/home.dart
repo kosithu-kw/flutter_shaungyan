@@ -3,11 +3,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:shaungyan/readme.dart';
 import 'package:shaungyan/search.dart';
-import 'main.dart';
 import 'error.dart';
-import 'package:share/share.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 
@@ -47,6 +46,17 @@ class _AppState extends State<HomeApp> {
     });
   }
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
+
   final String _title="ရှောင်";
 
   final String _mTitle="တွဲဖက်၍မစားသုံးသင့်တဲ့အစားအစာများ";
@@ -54,7 +64,11 @@ class _AppState extends State<HomeApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return WillPopScope(
+      onWillPop: () async {
+          return await exit(0);
+      },
+      child: MaterialApp(
       title: _title,
       theme: ThemeData(fontFamily: 'uni'),
       home: Scaffold(
@@ -76,7 +90,7 @@ class _AppState extends State<HomeApp> {
                   color: Colors.white70,
                   iconSize: 30,
                   onPressed: (){
-                    Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext)=>new SearchApp()));
+                    Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: SearchApp()));
                   },
                   icon: Icon(Icons.search_rounded))
           ],
@@ -103,10 +117,8 @@ class _AppState extends State<HomeApp> {
                 title: Text("App Version"),
                 subtitle: Text("1.0.0"),
                 leading: Icon(Icons.settings_accessibility),
-                onTap: (){
-                  Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context)=> new HomeApp()));
-                },
               ),
+              /*
               ListTile(
                 title: Text("Share App"),
                 leading: Icon(Icons.share),
@@ -114,108 +126,117 @@ class _AppState extends State<HomeApp> {
                   Share.share("https://play.google.com/store/apps/details?id=com.goldenmawlamyine.shaungyan");
                 },
               ),
+
+               */
               ListTile(
                 title: Text("Read Me"),
                 leading: Icon(Icons.read_more),
                 onTap: (){
-                  Navigator.of(context).pushNamed('/readme');
+                  Navigator.push(context, PageTransition(type: PageTransitionType.leftToRight, child: ReadmeApp()));
                 },
               )
             ],
           ),
         ),
-        body: Container(
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Container(
 
-          child: FutureBuilder(
-            future: _isUpdate ? getData() : getData(),
-            builder: (context, AsyncSnapshot s){
+                child: FutureBuilder(
+                  future: _isUpdate ? getData() : getData(),
+                  builder: (context, AsyncSnapshot s){
 
-              if(_isUpdate)
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    if(_isUpdate)
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
 
-                    children: [
-                      Container(
-                        padding: EdgeInsets.only(left: 120, right: 120),
-                        child: LinearProgressIndicator(),
-                      ),
-                      Container(
-                        padding: EdgeInsets.only(top: 20),
-                        child: Text("Updating data from server..."),
-                      )
-                    ],
-                  ),
-                );
-
-              if(s.hasData){
-
-                return ListView.builder(
-                  itemCount: s.data.length,
-                  itemBuilder: (context, i){
-                    return Card(
-                      child: ListTile(
-
-                        title: Text(
-                            s.data[i]['h'],
-                          textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.redAccent)
-                        ),
-                        subtitle: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Expanded(
-                              child: new Padding(
-                                padding: const EdgeInsets.all(5.0),
-                                child: Center(
-                                  child: Text(s.data[i]['f'], style: TextStyle(color: Colors.black),),
-                                )
-                              ),
+                          children: [
+                            Container(
+                              padding: EdgeInsets.only(left: 120, right: 120),
+                              child: LinearProgressIndicator(),
                             ),
-                            Expanded(
-                              child: new Padding(
-                                padding: const EdgeInsets.all(5.0),
-                                child: Center(
-                                  child: Text(s.data[i]['s'],style: TextStyle(color: Colors.black)),
-                                )
-                              ),
-                            ),
+                            Container(
+                              padding: EdgeInsets.only(top: 20),
+                              child: Text("Updating data from server..."),
+                            )
                           ],
-                        )
-                      ),
-                    );
+                        ),
+                      );
+
+                    if(s.hasData){
+
+                      return ListView.builder(
+                        itemCount: s.data.length,
+                        itemBuilder: (context, i){
+                          return Card(
+                            child: ListTile(
+
+                                title: Text(
+                                    s.data[i]['h'],
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(color: Colors.redAccent)
+                                ),
+                                subtitle: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: new Padding(
+                                          padding: const EdgeInsets.all(5.0),
+                                          child: Center(
+                                            child: Text(s.data[i]['f'], style: TextStyle(color: Colors.black),),
+                                          )
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: new Padding(
+                                          padding: const EdgeInsets.all(5.0),
+                                          child: Center(
+                                            child: Text(s.data[i]['s'],style: TextStyle(color: Colors.black)),
+                                          )
+                                      ),
+                                    ),
+                                  ],
+                                )
+                            ),
+                          );
+                        },
+
+                      );
+
+                    }else if(s.hasError) {
+                      return Center(
+                          child: IconButton(
+                            onPressed: (){
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (BuildContext context) => new ErrorApp()));
+                            },
+                            icon: Icon(Icons.refresh_outlined),
+                            color: Colors.blueGrey,
+                          )
+                      );
+                      // return Center(
+                      //  child: CircularProgressIndicator(),
+                      //);
+                    }
+                    else{
+                      return Center(
+                        child: CircularProgressIndicator(
+                          backgroundColor: Colors.blueGrey,
+                        ),
+                      );
+                    }
                   },
-
-                );
-
-              }else if(s.hasError) {
-                return Center(
-                    child: IconButton(
-                      onPressed: (){
-                        Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (BuildContext context) => new ErrorApp()));
-                      },
-                      icon: Icon(Icons.refresh_outlined),
-                      color: Colors.blueGrey,
-                    )
-                );
-                // return Center(
-                //  child: CircularProgressIndicator(),
-                //);
-              }
-              else{
-                return Center(
-                  child: CircularProgressIndicator(
-                    backgroundColor: Colors.blueGrey,
-                  ),
-                );
-              }
-            },
+                ),
+              ),
+            ],
           ),
-        ),
+        )
       ),
+      )
     );
 
   }
