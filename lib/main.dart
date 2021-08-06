@@ -1,122 +1,98 @@
-import 'dart:async';
-import 'dart:io';
-
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
-import 'package:shaungyan/readme.dart';
-import 'home.dart';
-import 'error.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:shaungyan/home.dart';
 
 
-void main(){
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setEnabledSystemUIOverlays(
+      [SystemUiOverlay.bottom, SystemUiOverlay.top]);
   runApp(
-    MaterialApp(
-      title: 'Shoung Routes',
-      // Start the app with the "/" named route. In this case, the app starts
-      // on the FirstScreen widget.
-
-      initialRoute: '/',
-      routes: {
-        // When navigating to the "/" route, build the FirstScreen widget.
-        '/': (context) => MainApp(),
-        // When navigating to the "/second" route, build the SecondScreen widget.
-        '/home': (context) => HomeApp(),
-        '/error' : (context) => ErrorApp(),
-        '/readme':(context)=> ReadmeApp()
-      },
-    ),
+      MaterialApp(
+        home: MyApp(),
+      )
   );
 }
 
-class MainApp extends StatefulWidget {
-  const MainApp({Key? key}) : super(key: key);
-
+class MyApp extends StatelessWidget {
+  // This widget is the root of your application.
   @override
-  _AppState createState() => _AppState();
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: Init.instance.initialize(),
+      builder: (context, AsyncSnapshot snapshot) {
+        // Show splash screen while waiting for app resources to load:
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return MaterialApp(
+              home: Splash()
+          );
+        } else {
+          // Loading is done, return the app:
+          return MaterialApp(
+            home: HomeApp(),
+          );
+        }
+      },
+    );
+  }
 }
 
-class _AppState extends State<MainApp> {
+class Splash extends StatelessWidget {
 
-  Future<InitializationStatus> _initGoogleMobileAds() {
-    // TODO: Initialize Google Mobile Ads SDK
-    return MobileAds.instance.initialize();
-  }
-
-  startTime() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool firstTime = prefs.getBool('first_time');
-
-    var _duration = new Duration(seconds: 3);
-
-    if (firstTime != null && !firstTime) {// Not first time
-      Navigator.pushNamed(context, "/home");
-      //print("Not first time");
-
-    } else {// First time
-      prefs.setBool('first_time', false);
-
-      checkConnection();
-      //print("first time");
-    }
-  }
-
-  final String _title="ရှောင်";
-
-  final String _mTitle="တွဲဖက်၍မစားသုံးသင့်တဲ့အစားအစာများ";
-
-
-  checkConnection() async{
-    try {
-      final result = await InternetAddress.lookup('raw.githubusercontent.com');
-      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        Navigator.pushNamed(context, '/home');
-      }
-    } on SocketException catch (_) {
-      Navigator.pushNamed(context, '/error');
-    }
-
-
-  }
-
-
-  @override
-  void initState() {
-    // TODO: implement initState
-
-    Timer(Duration(seconds: 3), () => startTime());
-    //checkConnection();
-    super.initState();
-  }
+  static const colorizeTextStyle = TextStyle(
+    fontSize: 50.0,
+  );
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: _title,
-      home: Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-            color: Colors.blueGrey
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(_title, style: TextStyle(color: Colors.white, fontSize: 40),),
-                Text(_mTitle, style: TextStyle(color: Colors.white70),),
+    return Scaffold(
+      backgroundColor: Colors.blueGrey,
+      body: Center(
+          child: Stack(
+            children: [
+              Center(
+                child: Container(
+                  child: DefaultTextStyle(
+                    style: const TextStyle(
+                      fontSize: 50.0,
+                    ),
+                    child: AnimatedTextKit(
+                      animatedTexts: [
+                        ScaleAnimatedText('ရှောင်'),
 
-                SizedBox(height: 200,),
-                Container(
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    backgroundColor: Colors.white70,
+                      ],
+                      onTap: () {
+                        print("Tap Event");
+                      },
+                    ),
                   ),
                 )
-              ],
-            ),
-          ),
-        ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  margin: EdgeInsets.only(bottom: 50, left: 180, right: 180),
+                  child: LinearProgressIndicator(
+                    color: Colors.white,
+                    backgroundColor: Colors.grey,
+                  ),
+                ),
+              )
+            ],
+          )
       ),
     );
+  }
+}
+
+class Init {
+  Init._();
+  static final instance = Init._();
+
+  Future initialize() async {
+    await Future.delayed(Duration(seconds: 4));
   }
 }

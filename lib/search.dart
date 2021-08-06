@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flappy_search_bar/flappy_search_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shaungyan/ad_helper.dart';
 import 'package:shaungyan/home.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
@@ -33,6 +34,8 @@ class _SearchAppState extends State<SearchApp> {
     }
   }
 
+  /*
+
   String InterstitialId="";
   bool showInter=false;
 
@@ -55,6 +58,8 @@ class _SearchAppState extends State<SearchApp> {
     });
   }
 
+   */
+
 
   // TODO: Add _interstitialAd
   InterstitialAd? _interstitialAd;
@@ -65,7 +70,7 @@ class _SearchAppState extends State<SearchApp> {
   // TODO: Implement _loadInterstitialAd()
   void _loadInterstitialAd() {
     InterstitialAd.load(
-      adUnitId: InterstitialId,
+      adUnitId: AdHelper.interstitialAdUnitId,
       request: AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
@@ -106,23 +111,18 @@ class _SearchAppState extends State<SearchApp> {
   @override
   void initState() {
     // TODO: implement initState
-    _getAdId();
 
-    Timer(Duration(seconds: 3), () {
-      if(showInter){
-        if (!_isInterstitialAdReady) {
-          _loadInterstitialAd();
-        }
-      }
-    });
+   if (!_isInterstitialAdReady) {
+     _loadInterstitialAd();
+   }
+
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
-    if(showInter){
-      _interstitialAd?.dispose();
-    }
+
+   _interstitialAd?.dispose();
 
     super.dispose();
   }
@@ -154,7 +154,7 @@ class _SearchAppState extends State<SearchApp> {
 
             floatingActionButton: FloatingActionButton(
               onPressed: (){
-                  if(showInter && _isInterstitialAdReady){
+                  if(_isInterstitialAdReady){
                       _interstitialAd?.show();
                   }else{
                     Navigator.push(context, PageTransition(type: PageTransitionType.leftToRightWithFade, child: HomeApp()));

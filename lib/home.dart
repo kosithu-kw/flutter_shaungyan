@@ -3,14 +3,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shaungyan/readme.dart';
 import 'package:shaungyan/search.dart';
+import 'ad_helper.dart';
 import 'error.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-
-
-void main()=>runApp(HomeApp());
 
 
 
@@ -46,14 +45,49 @@ class _AppState extends State<HomeApp> {
     });
   }
 
+
+  // TODO: Add _bannerAd
+  late BannerAd _bannerAd;
+
+  // TODO: Add _isBannerAdReady
+  bool _isBannerAdReady = false;
+
+  _callBanner(){
+    // TODO: Initialize _bannerAd
+    _bannerAd = BannerAd(
+      adUnitId: AdHelper.bannerAdUnitId,
+      request: AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          setState(() {
+            _isBannerAdReady = true;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          print('Failed to load a banner ad: ${err.message}');
+          _isBannerAdReady = false;
+          ad.dispose();
+        },
+      ),
+    );
+
+    _bannerAd.load();
+  }
+
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    if(!_isBannerAdReady){
+      _callBanner();
+    }
   }
   @override
   void dispose() {
     // TODO: implement dispose
+    _bannerAd.dispose();
     super.dispose();
   }
 
@@ -142,7 +176,14 @@ class _AppState extends State<HomeApp> {
           child: Stack(
             children: [
               Container(
-
+                decoration: _isBannerAdReady ? BoxDecoration(
+                    border: Border(
+                        bottom: BorderSide(
+                            width: 70,
+                            color: Colors.white70
+                        )
+                    )
+                ) : null,
                 child: FutureBuilder(
                   future: _isUpdate ? getData() : getData(),
                   builder: (context, AsyncSnapshot s){
@@ -232,6 +273,15 @@ class _AppState extends State<HomeApp> {
                   },
                 ),
               ),
+              if (_isBannerAdReady)
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    width: _bannerAd.size.width.toDouble(),
+                    height: _bannerAd.size.height.toDouble(),
+                    child: AdWidget(ad: _bannerAd),
+                  ),
+                ),
             ],
           ),
         )
