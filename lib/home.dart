@@ -176,14 +176,14 @@ class _AppState extends State<HomeApp> {
           child: Stack(
             children: [
               Container(
-                decoration: _isBannerAdReady ? BoxDecoration(
+                decoration: BoxDecoration(
                     border: Border(
                         bottom: BorderSide(
-                            width: 70,
+                            width: 60,
                             color: Colors.white70
                         )
                     )
-                ) : null,
+                ),
                 child: FutureBuilder(
                   future: _isUpdate ? getData() : getData(),
                   builder: (context, AsyncSnapshot s){
